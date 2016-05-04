@@ -9,6 +9,10 @@ Prof. Hoenigman*/
 #include <sstream>
 #include <vector>
 #include <time.h>
+#include <string>
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
 using namespace std;
 
 Railroad::Railroad()
@@ -18,7 +22,7 @@ Railroad::Railroad()
 
 Railroad::~Railroad()
 {
-	
+
 }
 
 void Railroad::buildRailroad() //reads in file, builds linked list
@@ -26,7 +30,7 @@ void Railroad::buildRailroad() //reads in file, builds linked list
 	string file = "stations.csv";
 	ifstream inFile;
 	string line;
-	inFile.open(file);
+	inFile.open(file.c_str());
 	vector<Station*> stations;
 	while (getline(inFile, line))
 	{
@@ -35,8 +39,8 @@ void Railroad::buildRailroad() //reads in file, builds linked list
 		string strName, strCode, strDistN, strDistS;
 		int intDistN, intDistS;
 		getline(getline(getline(getline(ss, strName, ','), strCode, ','), strDistN, ','), strDistS, ',');
-		intDistN = stoi(strDistN);
-		intDistS = stoi(strDistS);
+		intDistN = atoi(strDistN.c_str());
+		intDistS = atoi(strDistS.c_str());
 
 		add->stationName = strName;
 		add->code = strCode;
@@ -92,7 +96,7 @@ void Railroad::displayRailroad() //prints out all nodes in the list
 				current->stationName <<"	<--------------------- *YOU ARE HERE*"<< endl;
 			current = current->south;
 		}
-		
+
 	}
 	cout << "======================================\n" << endl;
 }
@@ -135,8 +139,14 @@ Station* Railroad::findStation(string id) //checks to see if requested station e
 }
 
 void Railroad::buyTicket(Station* dest, string un) //allows user to buy a ticket, sets appropriate parameters of the passenger struct
-{
-	passenger.username = un;	
+{   string choice;
+    if(passenger.travelDistance!=0){
+        cout<<"You already have a ticket scheduled, purchasing another ticket will require you to override your current plans. Would you like to override your current plans? (Y/N)"<<endl;
+        cin>>choice;
+        if(choice=="N")
+            return;
+    }
+	passenger.username = un;
 	passenger.destination = dest;
 	cout << endl;
 	if (dest->distFromNorthEnd - passenger.location->distFromNorthEnd > 0)
@@ -270,6 +280,11 @@ double Railroad::calcTicketPrice() //calculates final ticket price
 
 void Railroad::changeStation() //allows user to ride the train and change current station
 {
+    if(passenger.travelDistance==0){
+        cout << "\nYou may not ride the train without a ticket." << endl;
+        cout << "Please purchase a ticket through the main menu"<<endl;
+        return;
+    }
 	if (passenger.hasTicket == true)
 	{
 		cout << "ALL ABOARD!!!" << endl;
@@ -306,15 +321,16 @@ void Railroad::changeStation() //allows user to ride the train and change curren
 		passenger.northBound = false;
 		passenger.destination = NULL;
 	}
-	else
-	{
-		cout << "\nYou may not ride the train without a ticket." << endl;
-	}
+
 }
 
 void Railroad::printTicket() //prints all relevant information about the user
 {
-	if (passenger.hasTicket == true)
+    if(passenger.travelDistance==0){
+        cout << "\nYou have not yet purchased a ticket" << endl;
+        return;
+    }
+	else if (passenger.hasTicket == true)
 	{
 		cout << "========================================================================================" << endl;
 		cout << "			AMTRAK Pacific Surfliner" << endl;
@@ -337,8 +353,6 @@ void Railroad::printTicket() //prints all relevant information about the user
 		cout << endl;
 		cout << "========================================================================================" << endl;
 	}
-	else
-	{
-		cout << "\nYou have not yet purchased a ticket" << endl;
-	}
+
 }
+
